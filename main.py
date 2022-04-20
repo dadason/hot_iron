@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, abort
+from flask import Flask, render_template, redirect, request, abort, url_for
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 from forms.news import NewsForm
@@ -6,6 +6,7 @@ from forms.user import RegisterForm, LoginForm
 from data.news import News
 from data.users import User
 from data import db_session
+import os
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -35,16 +36,27 @@ def main():
 @login_required
 def add_news():
     form = NewsForm()
+    form1 = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         news = News()
         news.title = form.title.data
         news.content = form.content.data
-        news.is_private = form.is_private.data
+        # news.photo = form.photo.data
+        print(news.photo)
+
         current_user.news.append(news)
+
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
+    uploaded_file = request.files['file']
+    print(uploaded_file )
+    # if uploaded_file.filename != '':
+    #     os.chdir('./static')
+    #     uploaded_file.save(uploaded_file.filename)
+    # return redirect(url_for('index'))
+
     return render_template('news.html', title='Добавление новости', form=form)
 
 
